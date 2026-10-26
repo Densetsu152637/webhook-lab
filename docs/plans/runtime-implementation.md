@@ -15,7 +15,7 @@ Completion goals:
 
 **Scope:** strict validation, canonical reports, one-attempt HTTP delivery, monotonic scheduling, bounded concurrency, safe persistence and measured verification. **Non-goals:** random scheduling, retries, provider signing, authentication configuration, UI, database, public hosting, plugin APIs and cancellation guarantees. This plan-writing task executes no release.
 
-**Assumptions:** you own all Rust implementation; Rust 1.99.1 and Cargo.lock are the baseline; fixtures use synthetic data and endpoints you control. Proposed files below are suggestions, not frozen internal APIs. Introduce modules when their responsibility exists, rather than creating every empty module or a trait per operation.
+**Assumptions:** you own all Rust implementation; the automation maintainer/assistant owns workflow, readiness and release setup; Rust 1.99.1 and Cargo.lock are the baseline; fixtures use synthetic data and endpoints you control. Proposed files below are suggestions, not frozen internal APIs. Introduce modules when their responsibility exists, rather than creating every empty module or a trait per operation.
 
 **Relevant paths:** `src/`, `tests/acceptance.py`, `tests/fixtures/`, `tests/harness/`, `tests/performance.py`, `schemas/`, `scripts/check.py`, `scripts/prepare_release.py`, `project-status.json`, `.github/workflows/`.
 
@@ -191,6 +191,7 @@ This works in PowerShell and POSIX shells. Build first; change only the trailing
 ## Stage 9: performance, hosted evidence and readiness
 
 - **Objective:** establish measured usability, then make the readiness transition honestly.
+- **Ownership:** the learner implements and measures Rust behavior. The automation maintainer/assistant handles any workflow matrix changes, readiness configuration and release setup after the evidence is available; these are not additional CI implementation tasks for the learner.
 - **Depends on:** 8. **Suggested paths:** evidence/docs; future narrow runtime-workflow matrix changes; `project-status.json` only after evidence; README/contract status prose when implemented.
 - **Tasks:**
   - Run `python scripts/check.py performance`; inspect `.bench-results/performance.json`. Both `validated` and `budget_passed` must be true. The script validates exit/report/receiver counts/payloads/concurrency before reporting throughput.
@@ -200,7 +201,7 @@ This works in PowerShell and POSIX shells. Build first; change only the trailing
   - Review release guard, version/tag matching, `origin/main` ancestry and package/checksum requirements. No release tag or release workflow is executed by this planning task.
 - **Verification:** infrastructure/runtime/performance/audit/workflow commands above; after the supported transition, `python scripts/check.py release` repeats local checks without publishing. `scripts/prepare_release.py` and tag workflow are separate packaging/publication actions.
 - **Exit gate:** both platforms have traceable correctness/performance evidence, readiness implemented, hosted runtime job actually green, status prose accurate and release gates intact.
-- **Suggested commits:** `ci(runtime): validate both supported platforms`, then `chore(readiness): record verified runtime implementation` after evidence.
+- **Suggested commits (automation maintainer):** `ci(runtime): validate both supported platforms`, then `chore(readiness): record verified runtime implementation` after evidence.
 - **Status:** pending. **Outcome:** unimplemented. **Handoff:** a future maintainer decides when to create/review a release; implementation completion does not publish one.
 
 ## Coverage matrix: existing versus proposed
