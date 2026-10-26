@@ -29,10 +29,20 @@ These are development assets, not claims that webhook delivery is implemented or
 The planned command interface is:
 
 ```text
-webhook-lab run --scenario examples/duplicate.json --target http://127.0.0.1:8080/hook --report report.json
+webhook-lab run --scenario examples/reorder-and-duplicate.json --target http://127.0.0.1:8080/hook --report report.json
 ```
 
 This command is a specification for the future runtime. The current placeholder does not parse arguments or send requests. See the examples directory for the exact fixture filenames.
+
+## Local checks
+
+```text
+python scripts/check.py infrastructure
+python scripts/check.py audit
+python scripts/check.py workflow
+```
+
+These commands verify the development foundation. To work test-first on the runtime, run `python scripts/check.py runtime`; it deliberately fails against the placeholder. The implementation guide describes when to enable runtime checks in regular CI. Performance has a separate validated workload and configurable budget.
 
 ## Scope of v1
 
