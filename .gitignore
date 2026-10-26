@@ -1,0 +1,11 @@
+/target/
+/.tools/
+/.venv/
+__pycache__/
+*.py[cod]
+/.test-results/
+/.bench-results/
+.env
+.env.*
+!.env.example
+*.log
