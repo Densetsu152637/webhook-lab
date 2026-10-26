@@ -10,4 +10,6 @@ The repository currently supplies a locked Rust package, an exit-78 placeholder,
 
 Use `docs/contract.md` as the external boundary and `docs/architecture.md` for responsibilities, not as a mandate for a complex internal framework. Avoid implementing retries, a database, public hosting, a GUI, plugin APIs, or provider-specific signing before v1 is complete.
 
+For dependency-ordered tasks, test coverage and exit gates, follow the [detailed runtime implementation plan](plans/runtime-implementation.md). Future runtime stages remain pending until their gates pass.
+
 The scaffold's unused intended runtime dependencies are deliberate: clap (CLI), serde/serde_json (data contracts), tokio (timers/tasks/semaphore), reqwest/Rustls (HTTP), thiserror (domain errors). No tracing dependency is included until a concrete diagnostic need exists. Do not treat infrastructure-green checks as runtime acceptance.
