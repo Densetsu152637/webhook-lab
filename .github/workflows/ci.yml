@@ -1,0 +1,136 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  infrastructure:
+    name: Infrastructure (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Install pinned Rust toolchain
+        shell: bash
+        run: rustup show active-toolchain
+      - run: python scripts/check.py infrastructure
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Install pinned Rust toolchain
+        shell: bash
+        run: rustup show active-toolchain
+      - name: Install pinned dependency auditors
+        run: |
+          cargo install --locked cargo-deny --version 0.20.2
+          cargo install --locked cargo-audit --version 0.22.2
+      - run: python scripts/check.py audit
+  workflow:
+    name: Workflow audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Install portable audit tools
+        run: python scripts/bootstrap.py --binaries-only
+      - run: python scripts/check.py workflow
+  readiness:
+    name: Runtime readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      runtime: ${{ steps.status.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - id: status
+        name: Validate and report implementation status
+        shell: bash
+        run: |
+          status=$(python scripts/check.py status)
+          echo "runtime=$status" >> "$GITHUB_OUTPUT"
+          echo "Runtime: **$status**. Pending means application acceptance and performance are unverified; infrastructure success does not establish runtime correctness." >> "$GITHUB_STEP_SUMMARY"
+  runtime:
+    name: Runtime acceptance
+    needs: readiness
+    if: needs.readiness.outputs.runtime == 'implemented'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Install pinned Rust toolchain
+        shell: bash
+        run: rustup show active-toolchain
+      - run: python scripts/check.py runtime
+      - run: python scripts/check.py performance
+  gate:
+    name: CI gate
+    if: always()
+    needs: [infrastructure, audit, workflow, readiness, runtime]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      INFRASTRUCTURE: ${{ needs.infrastructure.result }}
+      AUDIT: ${{ needs.audit.result }}
+      WORKFLOW: ${{ needs.workflow.result }}
+      READINESS: ${{ needs.readiness.result }}
+      RUNTIME: ${{ needs.runtime.result }}
+      STATUS: ${{ needs.readiness.outputs.runtime }}
+    steps:
+      - name: Enforce required infrastructure and readiness checks
+        shell: bash
+        run: |
+          test "$INFRASTRUCTURE" = success
+          test "$AUDIT" = success
+          test "$WORKFLOW" = success
+          test "$READINESS" = success
+          if [ "$STATUS" = implemented ]; then
+            test "$RUNTIME" = success
+          else
+            test "$STATUS" = pending
+            test "$RUNTIME" = skipped
+            echo "Runtime acceptance/performance intentionally pending implementation." >> "$GITHUB_STEP_SUMMARY"
+          fi

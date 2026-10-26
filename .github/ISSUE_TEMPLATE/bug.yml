@@ -1,0 +1,17 @@
+name: Bug report
+description: Report reproducible development or runtime behavior.
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction and expected behavior
+      description: Include tool versions, operating system, commands, and sanitized output.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Actual behavior
+      description: Avoid credentials and private webhook payloads. Use private vulnerability reporting for security issues.
+    validations:
+      required: true

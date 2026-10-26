@@ -1,0 +1,57 @@
+name: Release candidate
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  candidate:
+    name: Validate release candidate
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Refuse unfinished runtime before installing tools
+        run: python -c "import sys; sys.path.insert(0, 'scripts'); from check import require_implemented; require_implemented()"
+      - name: Install pinned Rust toolchain
+        shell: bash
+        run: rustup show active-toolchain
+      - name: Install portable audit tools
+        run: python scripts/bootstrap.py --binaries-only
+      - name: Install pinned dependency auditors
+        run: |
+          cargo install --locked cargo-deny --version 0.20.2
+          cargo install --locked cargo-audit --version 0.22.2
+      - run: python scripts/check.py release
+      - name: Stage validated executable and checksums
+        shell: python
+        run: |
+          import hashlib, pathlib, shutil, sys
+          sys.path.insert(0, 'scripts')
+          from check import binary, require_implemented
+          require_implemented()
+          output = pathlib.Path('.test-results/release')
+          output.mkdir(parents=True, exist_ok=True)
+          target = output / binary('release').name
+          shutil.copy2(binary('release'), target)
+          (output / 'SHA256SUMS').write_text(hashlib.sha256(target.read_bytes()).hexdigest() + '  ' + target.name + '\n')
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: webhook-lab-${{ runner.os }}-${{ github.sha }}
+          path: .test-results/release/
+          if-no-files-found: error
+          retention-days: 14

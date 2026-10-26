@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: rustfmt
+        name: Rust formatting
+        language: system
+        entry: cargo fmt --all -- --check
+        pass_filenames: false
+        types: [rust]
+      - id: readiness-contract
+        name: Runtime readiness contract
+        language: python
+        entry: python scripts/check.py status
+        pass_filenames: false
+        always_run: true
+      - id: workflow-audit
+        name: Workflow audit and secret scan
+        language: python
+        entry: python scripts/check.py workflow
+        pass_filenames: false
+        always_run: true
