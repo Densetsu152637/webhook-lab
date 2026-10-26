@@ -6,6 +6,7 @@ import subprocess
 import unittest
 from unittest.mock import patch
 import check
+from prepare_release import validate_tag
 
 
 class ReleaseGuardTests(unittest.TestCase):
@@ -20,6 +21,13 @@ class ReleaseGuardTests(unittest.TestCase):
             with self.assertRaises(subprocess.CalledProcessError):
                 check.workflow()
             self.assertEqual(run.call_count, 1)
+
+    def test_release_tag_must_match_package_version(self):
+        validate_tag("v1.2.3", "1.2.3")
+        validate_tag("v1.2.3-rc.1", "1.2.3-rc.1")
+        for tag in ("v1.2.4", "1.2.3", "v1.2.3/extra", "v1.2.3;echo bad"):
+            with self.assertRaises(ValueError):
+                validate_tag(tag, "1.2.3")
 
     def test_validated_status_contract(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -14,7 +14,7 @@ Only send requests to authorized endpoints. The harness uses loopback HTTP and s
 - actionlint checks workflow syntax/expressions. Actions are pinned to full commit SHAs. Untrusted pull requests receive read-only repository permissions, no stored checkout credentials, and no deployment secrets; no pull_request_target workflow is used.
 - CodeQL scans Rust, Python harness/tooling, and GitHub Actions on trusted main pushes and weekly schedules. Only its scan job has security-events write permission. PR workflows do not execute project code with a write token. [Rust support is generally available](https://github.blog/changelog/2025-10-14-codeql-scanning-rust-and-c-c-without-builds-is-now-generally-available/); [build mode none supports Rust](https://docs.github.com/en/code-security/reference/code-scanning/workflow-configuration-options). Configure advanced setup rather than simultaneously enabling default CodeQL setup.
 - Dependabot proposes weekly dependency and action updates. Scheduled auditing catches newly published advisories even when source code is unchanged.
-- Release candidates require implemented status and all executable behavior/performance checks before artifacts are uploaded. The release token is read-only for repository contents; no automatic public release is created.
+- Release candidates require implemented status and all executable behavior/performance checks before artifacts are uploaded. Candidate jobs have read-only contents access. Only a separate tag-only publication job has contents-write access, executes no checked-out project code, and creates a draft after all platforms pass. Tags must match the package version and be reachable from main; maintainer review precedes public release.
 
 ## Triage and exceptions
 

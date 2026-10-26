@@ -20,7 +20,18 @@ jobs:
         with:
           python-version: '3.13'
       - name: Install pinned Rust toolchain
-        shell: bash
-        run: rustup show active-toolchain
+        shell: python
+        run: |
+          import subprocess, tomllib
+          with open('rust-toolchain.toml', 'rb') as source:
+              toolchain = tomllib.load(source)['toolchain']
+          subprocess.run(['rustup', 'toolchain', 'install', toolchain['channel'], '--profile', 'minimal', '--component', 'rustfmt', '--component', 'clippy'], check=True)
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
       - run: python scripts/check.py runtime
       - run: python scripts/check.py performance

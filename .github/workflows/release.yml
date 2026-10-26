@@ -28,30 +28,60 @@ jobs:
       - name: Refuse unfinished runtime before installing tools
         run: python -c "import sys; sys.path.insert(0, 'scripts'); from check import require_implemented; require_implemented()"
       - name: Install pinned Rust toolchain
-        shell: bash
-        run: rustup show active-toolchain
+        shell: python
+        run: |
+          import subprocess, tomllib
+          with open('rust-toolchain.toml', 'rb') as source:
+              toolchain = tomllib.load(source)['toolchain']
+          subprocess.run(['rustup', 'toolchain', 'install', toolchain['channel'], '--profile', 'minimal', '--component', 'rustfmt', '--component', 'clippy'], check=True)
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
       - name: Install portable audit tools
         run: python scripts/bootstrap.py --binaries-only
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/bin/cargo-deny*
+            ~/.cargo/bin/cargo-audit*
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+          key: auditors-${{ runner.os }}-deny0.20.2-audit0.22.2-${{ hashFiles('rust-toolchain.toml') }}
       - name: Install pinned dependency auditors
         run: |
           cargo install --locked cargo-deny --version 0.20.2
           cargo install --locked cargo-audit --version 0.22.2
       - run: python scripts/check.py release
-      - name: Stage validated executable and checksums
-        shell: python
-        run: |
-          import hashlib, pathlib, shutil, sys
-          sys.path.insert(0, 'scripts')
-          from check import binary, require_implemented
-          require_implemented()
-          output = pathlib.Path('.test-results/release')
-          output.mkdir(parents=True, exist_ok=True)
-          target = output / binary('release').name
-          shutil.copy2(binary('release'), target)
-          (output / 'SHA256SUMS').write_text(hashlib.sha256(target.read_bytes()).hexdigest() + '  ' + target.name + '\n')
+      - name: Validate tag ancestry and package the executable
+        run: python scripts/prepare_release.py
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: webhook-lab-${{ runner.os }}-${{ github.sha }}
           path: .test-results/release/
           if-no-files-found: error
           retention-days: 14
+  publish:
+    name: Draft GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: webhook-lab-*
+          path: validated
+      - name: Publish validated packages as a draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          gh release create "$TAG" validated/*/* --repo "$GH_REPO" --verify-tag --draft --title "$TAG" --notes "Validated Windows and Linux packages. Review CI acceptance, performance, audit results, and checksums before publishing this draft."
