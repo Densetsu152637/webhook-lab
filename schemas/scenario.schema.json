@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Densetsu152637/webhook-lab/schemas/scenario.schema.json",
+  "title": "Webhook Lab scenario v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "timeout_ms",
+    "concurrency",
+    "events",
+    "deliveries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "timeout_ms": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60000
+    },
+    "concurrency": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "events": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "payload"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,128}$",
+            "minLength": 1,
+            "maxLength": 128,
+            "not": {
+              "pattern": "[^A-Za-z0-9._-]"
+            }
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "deliveries": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "event",
+          "at_ms"
+        ],
+        "properties": {
+          "event": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,128}$",
+            "minLength": 1,
+            "maxLength": 128,
+            "not": {
+              "pattern": "[^A-Za-z0-9._-]"
+            }
+          },
+          "at_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000
+          }
+        }
+      }
+    }
+  }
+}

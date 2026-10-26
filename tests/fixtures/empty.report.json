@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "deliveries": [],
+  "summary": {
+    "total": 0,
+    "succeeded": 0,
+    "failed": 0
+  }
+}

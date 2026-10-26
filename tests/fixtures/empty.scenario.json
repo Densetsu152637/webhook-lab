@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "timeout_ms": 1000,
+  "concurrency": 1,
+  "events": [
+    {
+      "id": "created",
+      "payload": {
+        "type": "order.created",
+        "order_id": "example-1"
+      }
+    }
+  ],
+  "deliveries": []
+}

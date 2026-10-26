@@ -1,0 +1,17 @@
+[package]
+name = "webhook-lab"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+description = "A deterministic webhook delivery failure lab (runtime pending)"
+license = "MIT"
+repository = "https://github.com/Densetsu152637/webhook-lab"
+publish = false
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "sync"] }
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+thiserror = "2"

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "deliveries": [
+    {
+      "index": 0,
+      "event": "first",
+      "scheduled_at_ms": 0,
+      "outcome": "success",
+      "http_status": 204
+    },
+    {
+      "index": 1,
+      "event": "second",
+      "scheduled_at_ms": 0,
+      "outcome": "success",
+      "http_status": 204
+    },
+    {
+      "index": 2,
+      "event": "third",
+      "scheduled_at_ms": 0,
+      "outcome": "success",
+      "http_status": 204
+    },
+    {
+      "index": 3,
+      "event": "fourth",
+      "scheduled_at_ms": 0,
+      "outcome": "success",
+      "http_status": 204
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "succeeded": 4,
+    "failed": 0
+  }
+}

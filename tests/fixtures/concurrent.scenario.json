@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "timeout_ms": 1000,
+  "concurrency": 2,
+  "events": [
+    {
+      "id": "first",
+      "payload": {
+        "type": "test.concurrent",
+        "position": 0
+      }
+    },
+    {
+      "id": "second",
+      "payload": {
+        "type": "test.concurrent",
+        "position": 1
+      }
+    },
+    {
+      "id": "third",
+      "payload": {
+        "type": "test.concurrent",
+        "position": 2
+      }
+    },
+    {
+      "id": "fourth",
+      "payload": {
+        "type": "test.concurrent",
+        "position": 3
+      }
+    }
+  ],
+  "deliveries": [
+    {
+      "event": "first",
+      "at_ms": 0
+    },
+    {
+      "event": "second",
+      "at_ms": 0
+    },
+    {
+      "event": "third",
+      "at_ms": 0
+    },
+    {
+      "event": "fourth",
+      "at_ms": 0
+    }
+  ]
+}

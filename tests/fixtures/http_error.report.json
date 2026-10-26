@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "deliveries": [
+    {
+      "index": 0,
+      "event": "created",
+      "scheduled_at_ms": 0,
+      "outcome": "http_error",
+      "http_status": 503
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "succeeded": 0,
+    "failed": 1
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Webhook Lab report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "deliveries",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "deliveries": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "event",
+          "scheduled_at_ms",
+          "outcome",
+          "http_status"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9999
+          },
+          "event": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,128}$",
+            "minLength": 1,
+            "maxLength": 128,
+            "not": {
+              "pattern": "[^A-Za-z0-9._-]"
+            }
+          },
+          "scheduled_at_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60000
+          },
+          "outcome": {
+            "enum": [
+              "success",
+              "http_error",
+              "timeout",
+              "transport_error"
+            ]
+          },
+          "http_status": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 100,
+            "maximum": 599
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "succeeded",
+        "failed"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "succeeded": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      }
+    }
+  }
+}
