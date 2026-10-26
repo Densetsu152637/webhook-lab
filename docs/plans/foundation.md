@@ -39,4 +39,4 @@ Create a public MIT-licensed Rust learning project with a verified Windows envir
 - Checks: combined checks; scoped review; public repository settings; push; hosted results; clean checkout and worktree retirement.
 
 ## Worktree records
-Foundation and automation worktrees will be rooted at D:/Git-Worktrees/webhook-lab/ with separate task branches from the initial committed base. Root owns creation, integration and cleanup. No worker may write application implementation or publish independently.
+Active: foundation at D:/Git-Worktrees/webhook-lab/foundation on chore/foundation; automation at D:/Git-Worktrees/webhook-lab/automation on ci/automation. Both start at bcd5ac4ee8a76e56b754e2f77901d9d75ac58090. Owned paths and checks are listed in stages 2 and 3. Root is creator, integrator and cleanup owner. No worker may write application implementation or publish independently.
