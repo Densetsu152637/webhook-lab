@@ -1,5 +1,7 @@
 # Plan: implement the webhook-lab runtime
 
+> **Superseded (2026-10-27)** by [dedupe-deployment.md](dedupe-deployment.md). The webhook replay runtime and JSON Schema functionality are dropped; this file is kept for history only.
+
 Revision: 2026-10-26; inspected baseline `11cab783d5cd7806770243d451a29b4bb2b29a67`.
 
 ## Goals and scope
